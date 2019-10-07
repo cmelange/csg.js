@@ -264,6 +264,14 @@ CAG.prototype = {
     let polys = csgplane.polygons.filter(function (polygon) {
       return Math.abs(polygon.plane.normal.z) > 0.99
     })
+    // add uv vectors, corresponding with the x and y coordinates of the
+    // points defining the original CAG
+    polys.forEach(function(poly) {
+      poly.vertices.forEach(function(vertex) {
+        vertex.uv = new Vector2D(vertex.pos.x, vertex.pos.y)
+      })
+    })
+
     // finally, position the plane per passed transformations
     return polys.map(function (poly) {
       return poly.transform(m)
@@ -304,12 +312,47 @@ CAG.prototype = {
     let vps1 = this._toVector3DPairs(m1)
     let vps2 = toCag._toVector3DPairs(m2)
 
+        // group the Vector3DPairs by 2D polygon in case of multi-array cag
+    let vps1List = []
+    let vps2List = []
+    let vps1Temp = [vps1[0]]
+    let vps2Temp = [vps2[0]]
+    let i = 0
+    for (i=1; i<vps1.length; ++i) {
+      if (!(vps1[i][1].equals(vps1[i-1][0]) || vps1[i][0].equals(vps1[i-1][1]))) {
+        vps1List.push(vps1Temp)
+        vps1Temp = []
+        vps2List.push(vps2Temp)
+        vps2Temp = []
+      }
+      vps1Temp.push(vps1[i])
+      vps2Temp.push(vps2[i])
+    }
+    vps1List.push(vps1Temp)
+    vps2List.push(vps2Temp)
+    
+        // calculate UV coordinates for each extruded side
     let polygons = []
-    vps1.forEach(function (vp1, i) {
-      polygons.push(new Polygon([
-        new Vertex3D(vps2[i][1]), new Vertex3D(vps2[i][0]), new Vertex3D(vp1[0])]))
-      polygons.push(new Polygon([
-        new Vertex3D(vps2[i][1]), new Vertex3D(vp1[0]), new Vertex3D(vp1[1])]))
+    vps1List.forEach(function(vps1,i) {
+      let x1 = 0;
+      let x2 = 0;
+      vps2 = vps2List[i]
+      vps1.forEach(function (vp1, j) {
+        let x1n = x1 + vp1[0].distanceTo(vp1[1])
+        let x2n = x2 + vps2[j][0].distanceTo(vps2[j][1])
+        let y20 = vp1[0].distanceTo(vps2[j][0])
+        let y21 = vp1[1].distanceTo(vps2[j][1])
+        polygons.push(new Polygon(
+          [Vertex3D.fromPosAndUV(vps2[j][1], new Vector2D(x2n, y21)),
+           Vertex3D.fromPosAndUV(vps2[j][0], new Vector2D(x2, y20)),
+           Vertex3D.fromPosAndUV(vp1[0], new Vector2D(x1, 0))]))
+        polygons.push(new Polygon(
+          [Vertex3D.fromPosAndUV(vps2[j][1], new Vector2D(x2n, y21)),
+           Vertex3D.fromPosAndUV(vp1[0], new Vector2D(x1, 0)),
+           Vertex3D.fromPosAndUV(vp1[1], new Vector2D(x1n, 0))]))
+        x1 = x1n
+        x2 = x2n
+      })
     })
     return polygons
   },
