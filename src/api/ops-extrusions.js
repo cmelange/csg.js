@@ -109,7 +109,10 @@ const extrude = function (cag, options) {
  * @param {Number} [options.resolution=defaultResolution3D] - number of polygons per 360 degree revolution
  * @returns {CSG} new 3D solid
  */
-const rotateExtrude = function (cag, options) { // FIXME options should be optional
+const rotateExtrude = function (cag, options) {
+  if (options === undefined) {
+    options = {}
+  }
   let alpha = parseOptionAsFloat(options, 'angle', 360)
   let resolution = parseOptionAsInt(options, 'resolution', defaultResolution3D)
 
