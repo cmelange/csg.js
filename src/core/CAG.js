@@ -283,7 +283,7 @@ CAG.prototype = {
     * copies of this cag, positioned in 3d space as "bottom" and
     * "top" plane per connectors toConnector1, and toConnector2, respectively
     */
-  _toWallPolygons: function (options) {
+  _toWallPolygons: function (options, iteration=0) {
         // normals are going to be correct as long as toConn2.point - toConn1.point
         // points into cag normal direction (check in caller)
         // arguments: options.toConnector1, options.toConnector2, options.cag
@@ -334,24 +334,24 @@ CAG.prototype = {
         // calculate UV coordinates for each extruded side
     let polygons = []
     vps1List.forEach(function(vps1,i) {
-      let x1 = 0;
-      let x2 = 0;
+      let xbot0 = 0;
+      let xtop0 = 0;
       vps2 = vps2List[i]
       vps1.forEach(function (vp1, j) {
-        let x1n = x1 + vp1[0].distanceTo(vp1[1])
-        let x2n = x2 + vps2[j][0].distanceTo(vps2[j][1])
-        let y20 = vp1[0].distanceTo(vps2[j][0])
-        let y21 = vp1[1].distanceTo(vps2[j][1])
+        let xbot1 = xbot0 + vp1[0].distanceTo(vp1[1])
+        let xtop1 = xtop0 + vps2[j][0].distanceTo(vps2[j][1])
+        let y0 = vp1[0].distanceTo(vps2[j][0])
+        let y1 = vp1[1].distanceTo(vps2[j][1])
         polygons.push(new Polygon(
-          [Vertex3D.fromPosAndUV(vps2[j][1], new Vector2D(x2n, y21)),
-           Vertex3D.fromPosAndUV(vps2[j][0], new Vector2D(x2, y20)),
-           Vertex3D.fromPosAndUV(vp1[0], new Vector2D(x1, 0))]))
+          [Vertex3D.fromPosAndUV(vps2[j][1], new Vector2D(xtop1, y1*(1+iteration))),
+           Vertex3D.fromPosAndUV(vps2[j][0], new Vector2D(xtop0, y0*(1+iteration))),
+           Vertex3D.fromPosAndUV(vp1[0], new Vector2D(xbot0, y0*iteration))]))
         polygons.push(new Polygon(
-          [Vertex3D.fromPosAndUV(vps2[j][1], new Vector2D(x2n, y21)),
-           Vertex3D.fromPosAndUV(vp1[0], new Vector2D(x1, 0)),
-           Vertex3D.fromPosAndUV(vp1[1], new Vector2D(x1n, 0))]))
-        x1 = x1n
-        x2 = x2n
+          [Vertex3D.fromPosAndUV(vps2[j][1], new Vector2D(xtop1, y1*(1+iteration))),
+           Vertex3D.fromPosAndUV(vp1[0], new Vector2D(xbot0, y0*iteration)),
+           Vertex3D.fromPosAndUV(vp1[1], new Vector2D(xbot1, y1*iteration))]))
+        xbot0 = xbot1
+        xtop0 = xtop1
       })
     })
     return polygons
