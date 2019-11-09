@@ -66,7 +66,7 @@ const addTransformationMethodsToPrototype = function (prot) {
     let Rz = Matrix4x4.rotationZ(gamma)
     let T = Matrix4x4.translation(new Vector3D(position))
 
-    return this.transform(Rx.multiply(Ry).multiply(Rz).multiply(T))
+    return this.transform(Rz.multiply(Ry).multiply(Rx).multiply(T))
   }
 }
 
