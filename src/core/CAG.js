@@ -307,8 +307,8 @@ CAG.prototype = {
     }
         // target cag is same as this unless specified
     let toCag = options.cag || this
-    let m1 = thisConnector.getTransformationTo(toConnector1, false, 0)
-    let m2 = thisConnector.getTransformationTo(toConnector2, false, 0)
+    let m1 = thisConnector.getTransformationTo(toConnector1, toConnector1.axisvector.z < 0, 0)
+    let m2 = thisConnector.getTransformationTo(toConnector2, toConnector2.axisvector.z < 0, 0)
     let vps1 = this._toVector3DPairs(m1)
     let vps2 = toCag._toVector3DPairs(m2)
 
