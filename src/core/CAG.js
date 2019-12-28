@@ -311,7 +311,7 @@ CAG.prototype = {
     let m2 = thisConnector.getTransformationTo(toConnector2, toConnector2.axisvector.z < 0, 0)
     let vps1 = this._toVector3DPairs(m1)
     let vps2 = toCag._toVector3DPairs(m2)
-    let hasMirroredNormals = toConnector1.axisvector.z < 0
+    let hasFlippedNormals = toConnector1.axisvector.z < 0
 
         // group the Vector3DPairs by 2D polygon in case of multi-array cag
     let vps1List = []
@@ -343,20 +343,26 @@ CAG.prototype = {
         let xtop1 = xtop0 + vps2[j][0].distanceTo(vps2[j][1])
         let y0 = vp1[0].distanceTo(vps2[j][0])
         let y1 = vp1[1].distanceTo(vps2[j][1])
-        let polygon1 = new Polygon(
-          [Vertex3D.fromPosAndUV(vps2[j][1], new Vector2D(xtop1, y1*(1+iteration))),
-           Vertex3D.fromPosAndUV(vps2[j][0], new Vector2D(xtop0, y0*(1+iteration))),
-           Vertex3D.fromPosAndUV(vp1[0], new Vector2D(xbot0, y0*iteration))])
-        let polygon2 = new Polygon(
-          [Vertex3D.fromPosAndUV(vps2[j][1], new Vector2D(xtop1, y1*(1+iteration))),
-           Vertex3D.fromPosAndUV(vp1[0], new Vector2D(xbot0, y0*iteration)),
-           Vertex3D.fromPosAndUV(vp1[1], new Vector2D(xbot1, y1*iteration))])
-        if (hasMirroredNormals) {
-          polygon1.plane = polygon1.plane.flipped()
-          polygon2.plane = polygon2.plane.flipped()
+        if (!hasFlippedNormals) {
+          polygons.push(new Polygon(
+            [Vertex3D.fromPosAndUV(vps2[j][1], new Vector2D(xtop1, y1*(1+iteration))),
+             Vertex3D.fromPosAndUV(vps2[j][0], new Vector2D(xtop0, y0*(1+iteration))),
+             Vertex3D.fromPosAndUV(vp1[0], new Vector2D(xbot0, y0*iteration))]) )
+          polygons.push(new Polygon(
+            [Vertex3D.fromPosAndUV(vps2[j][1], new Vector2D(xtop1, y1*(1+iteration))),
+             Vertex3D.fromPosAndUV(vp1[0], new Vector2D(xbot0, y0*iteration)),
+             Vertex3D.fromPosAndUV(vp1[1], new Vector2D(xbot1, y1*iteration))]) )
         }
-        polygons.push(polygon1)
-        polygons.push(polygon2)
+        else {
+          polygons.push(new Polygon(
+            [Vertex3D.fromPosAndUV(vp1[0], new Vector2D(xbot0, y0*iteration)),
+             Vertex3D.fromPosAndUV(vps2[j][0], new Vector2D(xtop0, y0*(1+iteration))),
+             Vertex3D.fromPosAndUV(vps2[j][1], new Vector2D(xtop1, y1*(1+iteration)))]) )
+          polygons.push(new Polygon(
+            [Vertex3D.fromPosAndUV(vp1[1], new Vector2D(xbot1, y1*iteration)),
+             Vertex3D.fromPosAndUV(vp1[0], new Vector2D(xbot0, y0*iteration)),
+             Vertex3D.fromPosAndUV(vps2[j][1], new Vector2D(xtop1, y1*(1+iteration)))]) )
+        }
         xbot0 = xbot1
         xtop0 = xtop1
       })
